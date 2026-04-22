@@ -34,6 +34,13 @@
       description: 'Actualiza la preparación a Enviado y, si corresponde, deriva el estado general a En tránsito.',
       requiresNote: false
     },
+    modificar_preparacion: {
+      label: 'Modificar preparacion',
+      microcopy: 'Se registrara una modificacion manual de la preparacion.',
+      description: 'Actualiza solo la Preparacion. No modifica el Estado general.',
+      requiresPreparation: true,
+      requiresNote: false
+    },
     modificar_estado: {
       label: 'Modificar estado',
       microcopy: 'Se registrará una modificación manual del estado general.',
@@ -200,6 +207,7 @@
       actions.push(['enviar', 'Marcar como Enviado', 'btn-outline-primary']);
     }
 
+    actions.push(['modificar_preparacion', 'Modificar preparacion', 'btn-outline-secondary']);
     actions.push(['modificar_estado', 'Modificar estado', 'btn-outline-secondary']);
     actions.push(['nota', 'Agregar nota', 'btn-outline-secondary']);
     actions.push(['problema', 'Reportar problema', 'btn-outline-danger']);
@@ -391,14 +399,15 @@
     });
   }
 
-  function applyEventImpact(item, eventDefinition, newState) {
+  function applyEventImpact(item, eventDefinition, newState, newPreparation) {
     if (eventDefinition.requiresState && newState) item.state = newState;
+    if (eventDefinition.requiresPreparation && newPreparation) item.preparation = newPreparation;
     if (eventDefinition.deriveState) item.state = eventDefinition.deriveState(item.state);
     if (eventDefinition.state) item.state = eventDefinition.state;
     if (eventDefinition.preparation) item.preparation = eventDefinition.preparation;
   }
 
-  function registerLogisticEvent(id, eventKey, note, position, newState) {
+  function registerLogisticEvent(id, eventKey, note, position, newState, newPreparation) {
     var item = findSurgery(id);
     var eventDefinition = logisticEvents[eventKey];
 
@@ -419,11 +428,11 @@
       stateBefore: item.state,
       stateAfter: eventDefinition.requiresState && newState ? newState : (eventDefinition.deriveState ? eventDefinition.deriveState(item.state) : (eventDefinition.state || item.state)),
       preparationBefore: item.preparation,
-      preparationAfter: eventDefinition.preparation || item.preparation,
+      preparationAfter: eventDefinition.requiresPreparation && newPreparation ? newPreparation : (eventDefinition.preparation || item.preparation),
       note: note || ''
     };
 
-    applyEventImpact(item, eventDefinition, newState);
+    applyEventImpact(item, eventDefinition, newState, newPreparation);
     item.lat = position.lat;
     item.lng = position.lng;
     item.events.unshift(event);
@@ -437,18 +446,18 @@
     return event;
   }
 
-  function eventResult(item, eventKey, newState) {
+  function eventResult(item, eventKey, newState, newPreparation) {
     var eventDefinition = logisticEvents[eventKey];
     return {
       stateAfter: eventDefinition.requiresState && newState ? newState : (eventDefinition.deriveState ? eventDefinition.deriveState(item.state) : (eventDefinition.state || item.state)),
-      preparationAfter: eventDefinition.preparation || item.preparation
+      preparationAfter: eventDefinition.requiresPreparation && newPreparation ? newPreparation : (eventDefinition.preparation || item.preparation)
     };
   }
 
   function impactText(eventKey, item) {
     var eventDefinition = logisticEvents[eventKey];
     if (!eventDefinition || !item) return 'Seleccioná un evento.';
-    var result = eventResult(item, eventKey, $('#newState').val());
+    var result = eventResult(item, eventKey, $('#newState').val(), $('#newPreparation').val());
     var stateResult = result.stateAfter === item.state ? 'Sin cambio (' + item.state + ')' : result.stateAfter;
     var preparationResult = result.preparationAfter === item.preparation ? 'Sin cambio (' + item.preparation + ')' : result.preparationAfter;
 
@@ -494,6 +503,10 @@
     $('#stateSelectGroup').toggleClass('d-none', !eventDefinition.requiresState);
     if (eventDefinition.requiresState) {
       $('#newState').val(item.state);
+    }
+    $('#preparationSelectGroup').toggleClass('d-none', !eventDefinition.requiresPreparation);
+    if (eventDefinition.requiresPreparation) {
+      $('#newPreparation').val(item.preparation);
     }
     $('#eventImpact').html(impactText(eventKey, item));
     $('#eventNote').prop('required', !!eventDefinition.requiresNote);
@@ -608,7 +621,7 @@
       .text(message);
   }
 
-  function confirmEvent(id, eventKey, note, onSuccess, button, newState) {
+  function confirmEvent(id, eventKey, note, onSuccess, button, newState, newPreparation) {
     var eventDefinition = logisticEvents[eventKey];
     if (eventDefinition.requiresNote && !note.trim()) {
       $('#eventNote').addClass('is-invalid').focus();
@@ -629,7 +642,7 @@
       }
 
       setGeoState('Ubicación capturada', 'ok');
-      var event = registerLogisticEvent(id, eventKey, note, position, newState);
+      var event = registerLogisticEvent(id, eventKey, note, position, newState, newPreparation);
       if (button) button.prop('disabled', false);
       onSuccess(event, position);
     });
@@ -638,6 +651,7 @@
   function bindEventForm(afterSuccess) {
     $('#eventType').on('change', updateEventModalView);
     $('#newState').on('change', updateEventModalView);
+    $('#newPreparation').on('change', updateEventModalView);
     $('#eventForm').on('submit', function (event) {
       event.preventDefault();
       confirmEvent(
@@ -646,7 +660,8 @@
         $('#eventNote').val(),
         afterSuccess,
         $('#confirmEvent'),
-        $('#newState').val()
+        $('#newState').val(),
+        $('#newPreparation').val()
       );
     });
   }

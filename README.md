@@ -88,6 +88,7 @@ Acciones disponibles:
 
 - `Marcar como Retirado`: cambia solo `Preparación` a `Retirado`.
 - `Marcar como Enviado`: cambia `Preparación` a `Enviado` y, si corresponde, deriva `Estado` a `En tránsito`.
+- `Modificar preparacion`: permite ajustar manualmente solo `Preparacion`.
 - `Modificar estado`: cambia solo `Estado`.
 - `Agregar nota`: agrega trazabilidad sin cambiar Estado ni Preparación.
 - `Reportar problema`: requiere nota y no cambia Estado ni Preparación automáticamente.

@@ -48,6 +48,7 @@
       <div class="mobile-actions">
         <button type="button" class="btn btn-info action-btn" data-event="retirar">Marcar como Retirado</button>
         <button type="button" class="btn btn-primary action-btn" data-event="enviar">Marcar como Enviado</button>
+        <button type="button" class="btn btn-secondary action-btn" data-event="modificar_preparacion">Modificar preparacion</button>
         <button type="button" class="btn btn-secondary action-btn" data-event="modificar_estado">Modificar estado</button>
         <button type="button" class="btn btn-outline-secondary action-btn" data-event="nota">Agregar nota</button>
         <button type="button" class="btn btn-danger action-btn" data-event="problema">Reportar problema</button>
@@ -83,6 +84,16 @@
               <option value="Pendiente">Pendiente</option>
               <option value="Autorizado">Autorizado</option>
               <option value="En tránsito">En tránsito</option>
+            </select>
+          </div>
+          <div class="form-group d-none" id="preparationSelectGroup">
+            <label for="newPreparation">Nueva preparacion</label>
+            <select class="form-control" id="newPreparation">
+              <option value="Sin preparar">Sin preparar</option>
+              <option value="Congelado">Congelado</option>
+              <option value="Congelado con faltantes">Congelado con faltantes</option>
+              <option value="Retirado">Retirado</option>
+              <option value="Enviado">Enviado</option>
             </select>
           </div>
           <div class="form-group">
