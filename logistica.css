@@ -554,6 +554,23 @@ label {
   border-top: 1px solid #3b4448;
 }
 
+.report-toolbar {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: #20282b;
+  border: 1px solid #3b4448;
+}
+
+.report-summary {
+  margin-bottom: 10px;
+  color: #dce4e7;
+}
+
+.trace-report-table td,
+.trace-report-table th {
+  font-size: 11px;
+}
+
 .modal-content {
   background: #171b1c;
   border: 1px solid #5f686c;
@@ -738,5 +755,47 @@ label {
 
   .action-group {
     white-space: normal;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #traceReportModal,
+  #traceReportModal * {
+    visibility: visible;
+  }
+
+  #traceReportModal {
+    position: absolute;
+    inset: 0;
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  #traceReportModal .modal-dialog {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+  }
+
+  #traceReportModal .modal-content {
+    border: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  #traceReportModal .modal-header .close,
+  #traceReportModal .report-toolbar,
+  #traceReportModal .modal-backdrop {
+    display: none !important;
+  }
+
+  #traceReportModal .table td,
+  #traceReportModal .table th {
+    color: #000;
+    border-color: #999;
   }
 }
