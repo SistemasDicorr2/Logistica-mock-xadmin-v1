@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>XAdmin Web | Panel de Logística</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./logistica.css">
+</head>
+<body class="xadmin-body">
+  <div class="xadmin-shell">
+    <aside class="xadmin-sidebar">
+      <div class="sidebar-brand"><span class="menu-icon">☰</span> Menú</div>
+      <nav class="sidebar-menu">
+        <div class="sidebar-section">Administración</div>
+        <a href="#" class="sidebar-link">Dashboard</a>
+        <a href="#" class="sidebar-link">Ventas</a>
+        <a href="#" class="sidebar-link">Compras</a>
+        <a href="#" class="sidebar-link">Comunicaciones</a>
+        <a href="#" class="sidebar-link">Contactos</a>
+        <a href="#" class="sidebar-link">Artículos</a>
+        <div class="sidebar-section active">Ortopedia</div>
+        <a href="#" class="sidebar-link active">Cirugías</a>
+        <a href="#" class="sidebar-link">Estadísticas</a>
+        <div class="sidebar-section">Ajustes</div>
+        <a href="#" class="sidebar-link">Admin</a>
+        <a href="#" class="sidebar-link">Empresas</a>
+        <a href="#" class="sidebar-link">Documentos</a>
+      </nav>
+    </aside>
+
+    <main class="xadmin-main">
+      <header class="xadmin-topbar">
+        <div>
+          <h1>Cirugías | logística</h1>
+          <span>Panel operativo de preparación y trazabilidad</span>
+        </div>
+        <div class="topbar-actions">
+          <a class="btn btn-sm btn-outline-secondary" href="./logistica_mobile.html">Vista operador</a>
+          <button type="button" class="btn btn-sm btn-primary" id="refreshDashboard">Actualizar</button>
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="card xadmin-card mb-3">
+          <div class="card-header">Filtrado de Cirugías</div>
+          <div class="card-body">
+            <form id="filterForm">
+              <div class="form-row align-items-end">
+                <div class="form-group col-md-2">
+                  <label for="filterDate">Fecha CX</label>
+                  <input type="date" class="form-control" id="filterDate">
+                </div>
+                <div class="form-group col-md-2">
+                  <label for="filterStatus">Estado</label>
+                  <select class="form-control selectpicker" id="filterStatus" data-style="btn-white">
+                    <option value="">Todos</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Autorizado">Autorizado</option>
+                    <option value="En tránsito">En tránsito</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-2">
+                  <label for="filterPreparation">Preparación</label>
+                  <select class="form-control selectpicker" id="filterPreparation" data-style="btn-white">
+                    <option value="">Todas</option>
+                    <option value="Sin preparar">Sin preparar</option>
+                    <option value="Congelado">Congelado</option>
+                    <option value="Congelado con faltantes">Congelado con faltantes</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Retirado">Retirado</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="filterSearch">Paciente / cliente / médico</label>
+                  <input type="text" class="form-control" id="filterSearch" placeholder="Buscar expediente...">
+                </div>
+                <div class="form-group col-md-2">
+                  <button type="submit" class="btn btn-primary btn-block">Buscar</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-8 mb-3">
+            <div class="card xadmin-card h-100">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Mapa Corrientes / NEA</span>
+                <small class="text-muted">En tránsito / Enviado / Retirado</small>
+              </div>
+              <div class="card-body">
+                <div id="logisticsMap" class="logistics-map"></div>
+                <div class="map-legend mt-3">
+                  <span><i class="legend-dot badge-congelado"></i>Congelado</span>
+                  <span><i class="legend-dot badge-congelado-con-faltantes"></i>Congelado con faltantes</span>
+                  <span><i class="legend-dot badge-enviado"></i>Enviado</span>
+                  <span><i class="legend-dot badge-retirado"></i>Retirado</span>
+                  <span><i class="legend-dot badge-problema"></i>Problema</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 mb-3">
+            <div class="card xadmin-card h-100">
+              <div class="card-header">Resumen</div>
+              <div class="card-body">
+                <div class="summary-grid" id="summaryGrid"></div>
+                <hr>
+                <h6 class="section-label">Último movimiento</h6>
+                <div id="lastAction" class="last-action text-muted">Sin movimientos en esta sesión.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card xadmin-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Cirugías</span>
+            <small id="resultCount" class="text-muted"></small>
+          </div>
+          <div class="table-responsive desktop-list">
+            <table class="table table-striped table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Expte</th>
+                  <th>Fecha CX</th>
+                  <th>Paciente</th>
+                  <th>Cliente</th>
+                  <th>Médico</th>
+                  <th>Estado</th>
+                  <th>Preparación</th>
+                  <th>Último evento</th>
+                  <th class="text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="surgeryTableBody"></tbody>
+            </table>
+          </div>
+          <div class="mobile-card-list" id="dashboardCardList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal fade" id="traceModal" tabindex="-1" role="dialog" aria-labelledby="traceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="traceModalLabel">Trazabilidad</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="traceModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <form class="modal-content" id="eventForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eventModalLabel">Registrar evento logístico</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="eventSurgeryId">
+          <div class="event-context" id="eventContext"></div>
+          <div class="alert alert-warning d-none" id="eventGeoWarning">
+            Para registrar este evento debés activar la ubicación del dispositivo.
+          </div>
+          <div class="geo-state" id="eventGeoState">La ubicación se solicitará al confirmar.</div>
+          <div class="form-group">
+            <label for="eventType">Evento</label>
+            <select class="form-control" id="eventType" required></select>
+          </div>
+          <div class="form-group">
+            <label>Impacto operativo</label>
+            <div class="event-impact" id="eventImpact">Seleccioná un evento.</div>
+          </div>
+          <div class="form-group d-none" id="stateSelectGroup">
+            <label for="newState">Nuevo estado</label>
+            <select class="form-control" id="newState">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Autorizado">Autorizado</option>
+              <option value="En tránsito">En tránsito</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="eventNote">Nota complementaria</label>
+            <textarea class="form-control" id="eventNote" rows="3" placeholder="Observación opcional del evento"></textarea>
+            <small class="form-text text-muted" id="eventNoteHint">La nota acompaña al evento logístico.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="confirmEvent">Confirmar evento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="detailModalLabel">Detalle</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="detailModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./logistica.js"></script>
+  <script>
+    $(function () {
+      window.LogisticaPanel.initDashboard();
+    });
+  </script>
+</body>
+</html>

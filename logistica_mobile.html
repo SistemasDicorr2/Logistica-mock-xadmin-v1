@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#2f4050">
+  <title>XAdmin Web | Logística Mobile</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="./logistica.css">
+</head>
+<body class="mobile-body">
+  <header class="mobile-header">
+    <div>
+      <strong>Logística</strong>
+      <span id="geoStatus">Activá tu ubicación para registrar eventos logísticos</span>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-light" id="enableLocation">Activar GPS</button>
+  </header>
+
+  <main class="mobile-main">
+    <div id="mobileMap" class="mobile-map"></div>
+
+    <section class="mobile-toolbar">
+      <div class="input-group">
+        <input type="search" class="form-control" id="mobileSearch" placeholder="Buscar paciente, cliente o médico">
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="button" id="mobileClear">Limpiar</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="mobileList" class="surgery-card-list"></section>
+  </main>
+
+  <div class="mobile-action-panel" id="mobileActionPanel" aria-hidden="true">
+    <div class="mobile-action-sheet">
+      <div class="sheet-handle"></div>
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <span class="section-label">Expediente</span>
+          <h1 id="sheetTitle">#</h1>
+        </div>
+        <button type="button" class="btn btn-sm btn-light" id="closeSheet">Cerrar</button>
+      </div>
+      <div id="sheetSummary" class="sheet-summary"></div>
+      <div class="actions-title">Registrar movimiento de caja</div>
+      <div class="mobile-actions">
+        <button type="button" class="btn btn-info action-btn" data-event="retirar">Marcar como Retirado</button>
+        <button type="button" class="btn btn-primary action-btn" data-event="enviar">Marcar como Enviado</button>
+        <button type="button" class="btn btn-secondary action-btn" data-event="modificar_estado">Modificar estado</button>
+        <button type="button" class="btn btn-outline-secondary action-btn" data-event="nota">Agregar nota</button>
+        <button type="button" class="btn btn-danger action-btn" data-event="problema">Reportar problema</button>
+      </div>
+      <button type="button" class="btn btn-outline-secondary btn-block mt-2" id="sheetTrace">Ver trazabilidad</button>
+    </div>
+  </div>
+
+  <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <form class="modal-content" id="eventForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eventModalLabel">Confirmar evento</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="eventSurgeryId">
+          <input type="hidden" id="eventType">
+          <div class="event-context" id="eventContext"></div>
+          <div class="alert alert-warning d-none" id="eventGeoWarning">
+            Para registrar este evento debés activar la ubicación del dispositivo.
+          </div>
+          <div class="geo-state" id="eventGeoState">La ubicación se solicitará al confirmar.</div>
+          <div class="form-group">
+            <label>Impacto operativo</label>
+            <div class="event-impact" id="eventImpact"></div>
+          </div>
+          <div class="form-group d-none" id="stateSelectGroup">
+            <label for="newState">Nuevo estado</label>
+            <select class="form-control" id="newState">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Autorizado">Autorizado</option>
+              <option value="En tránsito">En tránsito</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="eventNote">Nota complementaria</label>
+            <textarea class="form-control" id="eventNote" rows="3" placeholder="Observación opcional del evento"></textarea>
+            <small class="form-text text-muted" id="eventNoteHint">La nota acompaña al evento logístico.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="confirmEvent">Confirmar evento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="traceModal" tabindex="-1" role="dialog" aria-labelledby="traceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="traceModalLabel">Trazabilidad</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="traceModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="detailModalLabel">Detalle</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" id="detailModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./logistica.js"></script>
+  <script>
+    $(function () {
+      window.LogisticaPanel.initMobile();
+    });
+  </script>
+</body>
+</html>

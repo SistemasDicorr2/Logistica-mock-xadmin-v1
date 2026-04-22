@@ -1,0 +1,17 @@
+[
+  {
+    "id": "u_demo",
+    "name": "Operador Demo",
+    "role": "Operador logistico"
+  },
+  {
+    "id": "u_sistema",
+    "name": "Sistema RDP",
+    "role": "Sistema"
+  },
+  {
+    "id": "u_deposito",
+    "name": "Deposito Central",
+    "role": "Deposito"
+  }
+]
