@@ -533,70 +533,6 @@
     $('#traceModal').modal('show');
   }
 
-  function allTraceRows() {
-    var rows = [];
-    surgeries.forEach(function (item) {
-      (item.events || []).forEach(function (event) {
-        rows.push({
-          expediente: item.id,
-          paciente: item.patient,
-          institucion: item.institution,
-          eventKey: event.eventKey,
-          label: event.label,
-          user: event.user,
-          dateTime: event.dateTime,
-          location: event.locationLabel || item.address || 'Ubicación aproximada: Corrientes, Argentina',
-          stateBefore: event.stateBefore,
-          stateAfter: event.stateAfter,
-          preparationBefore: event.preparationBefore,
-          preparationAfter: event.preparationAfter,
-          note: event.note || ''
-        });
-      });
-    });
-
-    return rows.sort(function (a, b) {
-      return b.dateTime.localeCompare(a.dateTime);
-    });
-  }
-
-  function renderTraceReport() {
-    var search = ($('#traceReportSearch').val() || '').toLowerCase().trim();
-    var type = $('#traceReportType').val();
-    var rows = allTraceRows().filter(function (row) {
-      var text = [row.expediente, row.paciente, row.institucion, row.label, row.user, row.location, row.note].join(' ').toLowerCase();
-      return (!type || row.eventKey === type) && (!search || text.indexOf(search) !== -1);
-    });
-
-    $('#traceReportSummary').html(
-      '<strong>' + rows.length + '</strong> movimiento(s) encontrados'
-    );
-
-    $('#traceReportBody').html(rows.map(function (row) {
-      var stateText = row.stateBefore === row.stateAfter ? row.stateAfter : row.stateBefore + ' → ' + row.stateAfter;
-      var preparationText = row.preparationBefore === row.preparationAfter ? row.preparationAfter : row.preparationBefore + ' → ' + row.preparationAfter;
-
-      return '<tr>' +
-        '<td>' + row.dateTime + '</td>' +
-        '<td>' + row.expediente + '</td>' +
-        '<td>' + row.paciente + '</td>' +
-        '<td>' + row.label + '</td>' +
-        '<td>' + row.user + '</td>' +
-        '<td>' + row.location + '</td>' +
-        '<td>' + stateText + '</td>' +
-        '<td>' + preparationText + '</td>' +
-        '<td>' + (row.note || '-') + '</td>' +
-      '</tr>';
-    }).join('') || '<tr><td colspan="9" class="text-center text-muted">Sin movimientos.</td></tr>');
-  }
-
-  function openTraceReport() {
-    $('#traceReportSearch').val('');
-    $('#traceReportType').val('');
-    renderTraceReport();
-    $('#traceReportModal').modal('show');
-  }
-
   function showDetail(id) {
     var item = findSurgery(id);
     var event = lastEvent(item);
@@ -730,9 +666,7 @@
     });
     $('#filterDate, #filterStatus, #filterPreparation, #filterSearch').on('change keyup', refreshDashboard);
     $('#refreshDashboard').on('click', refreshDashboard);
-    $('#openTraceReport').on('click', openTraceReport);
-    $('#traceReportSearch, #traceReportType').on('keyup change', renderTraceReport);
-    $('#printTraceReport').on('click', function () {
+    $('#printTracePdf').on('click', function () {
       window.print();
     });
     bindSharedClicks(document);
@@ -828,6 +762,9 @@
     });
     $('#closeSheet').on('click', closeMobileSheet);
     $('#sheetTrace').on('click', function () { showTrace(selectedMobileId); });
+    $('#printTracePdf').on('click', function () {
+      window.print();
+    });
     $('.action-btn').on('click', function () {
       openEventModal(selectedMobileId, $(this).data('event'));
     });

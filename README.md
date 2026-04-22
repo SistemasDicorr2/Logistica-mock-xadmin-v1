@@ -104,6 +104,8 @@ Bolívar 1334, Corrientes
 
 Internamente el mock conserva lat/lng para mapa y futura integración.
 
+Desde el modal de trazabilidad se puede usar `Imprimir PDF` para abrir la impresión del navegador y guardar el historial como PDF.
+
 ## Deploy En Vercel
 
 Este proyecto funciona como sitio estático.

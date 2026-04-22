@@ -554,23 +554,6 @@ label {
   border-top: 1px solid #3b4448;
 }
 
-.report-toolbar {
-  margin-bottom: 12px;
-  padding: 10px;
-  background: #20282b;
-  border: 1px solid #3b4448;
-}
-
-.report-summary {
-  margin-bottom: 10px;
-  color: #dce4e7;
-}
-
-.trace-report-table td,
-.trace-report-table th {
-  font-size: 11px;
-}
-
 .modal-content {
   background: #171b1c;
   border: 1px solid #5f686c;
@@ -580,6 +563,13 @@ label {
 .modal-header,
 .modal-footer {
   border-color: #3b4448;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 }
 
 .modal .close {
@@ -763,39 +753,41 @@ label {
     visibility: hidden;
   }
 
-  #traceReportModal,
-  #traceReportModal * {
+  #traceModal,
+  #traceModal * {
     visibility: visible;
   }
 
-  #traceReportModal {
+  #traceModal {
     position: absolute;
     inset: 0;
     display: block !important;
     overflow: visible !important;
   }
 
-  #traceReportModal .modal-dialog {
-    max-width: none;
+  #traceModal .modal-dialog {
+    max-width: 780px;
     width: 100%;
     margin: 0;
   }
 
-  #traceReportModal .modal-content {
+  #traceModal .modal-content {
     border: 0;
     background: #fff;
     color: #000;
   }
 
-  #traceReportModal .modal-header .close,
-  #traceReportModal .report-toolbar,
-  #traceReportModal .modal-backdrop {
+  #traceModal .close,
+  #traceModal #printTracePdf,
+  .modal-backdrop {
     display: none !important;
   }
 
-  #traceReportModal .table td,
-  #traceReportModal .table th {
+  #traceModal .timeline-card,
+  #traceModal .timeline-note,
+  #traceModal .text-soft {
     color: #000;
-    border-color: #999;
+    background: #fff;
+    border-color: #bbb;
   }
 }
